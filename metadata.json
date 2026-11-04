@@ -1,0 +1,8 @@
+{
+  "name": "Remix PixelPerfect Dashboard Clone",
+  "description": "Replicate any dashboard interface with 100% precision, matching every color, font, and element exactly as shown.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
