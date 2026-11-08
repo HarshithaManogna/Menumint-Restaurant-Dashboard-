@@ -5,7 +5,7 @@ import { useRestaurantSettings } from '../context/RestaurantSettingsContext';
 interface TableFloorItem {
   id: string;
   tableNumber: string;
-  status: 'normal' | 'calling'; // calling = active pending waiter call
+  status: 'normal' | 'calling';
   callRequestType?: string;
   timeAgo?: string;
 }
@@ -24,7 +24,6 @@ export const WaiterCallsSection: React.FC = () => {
   const [filterTab, setFilterTab] = useState<'All' | 'Pending' | 'Attended'>('All');
   const [auditSearchQuery, setAuditSearchQuery] = useState('');
 
-  // Tables state initialized dynamically from settings.numberOfTables
   const [tables, setTables] = useState<TableFloorItem[]>(() => {
     return Array.from({ length: settings.numberOfTables }, (_, i) => {
       const num = i + 1;
@@ -46,7 +45,6 @@ export const WaiterCallsSection: React.FC = () => {
     });
   });
 
-  // Re-synchronize when settings.numberOfTables is updated in Settings
   useEffect(() => {
     setTables((prev) => {
       return Array.from({ length: settings.numberOfTables }, (_, i) => {
@@ -60,7 +58,6 @@ export const WaiterCallsSection: React.FC = () => {
     });
   }, [settings.numberOfTables]);
 
-  // Audit log of all attended requests
   const [attendedLogs, setAttendedLogs] = useState<AttendedLogItem[]>([
     {
       id: 'log-1',
@@ -126,46 +123,57 @@ export const WaiterCallsSection: React.FC = () => {
     setAttendedLogs((prev) => [newLog, ...prev]);
 
     setTables((prev) =>
-      prev.map((t) => (t.id === table.id ? { ...t, status: 'normal', callRequestType: undefined, timeAgo: undefined } : t))
+      prev.map((t) =>
+        t.id === table.id ? { ...t, status: 'normal', callRequestType: undefined, timeAgo: undefined } : t
+      )
     );
   };
 
   const filteredTables = tables.filter((t) => {
     if (filterTab === 'Pending') return t.status === 'calling';
-    return true; // 'All'
+    return true;
   });
 
-  const filteredLogs = attendedLogs.filter((log) =>
-    log.tableNumber.toLowerCase().includes(auditSearchQuery.toLowerCase()) ||
-    log.requestType.toLowerCase().includes(auditSearchQuery.toLowerCase())
+  const filteredLogs = attendedLogs.filter(
+    (log) =>
+      log.tableNumber.toLowerCase().includes(auditSearchQuery.toLowerCase()) ||
+      log.requestType.toLowerCase().includes(auditSearchQuery.toLowerCase())
   );
 
   return (
-    <div className="w-full space-y-6 animate-in fade-in duration-300 select-none pb-12">
-      {/* Top Action Bar: Waiter Calls Title on Left & Filter Capsule Bar on Right */}
-      <div className="flex items-center justify-between">
+    <div className="w-full h-full min-h-0 flex flex-col gap-4 animate-in fade-in duration-300 select-none overflow-hidden">
+      {/* Fixed Top Action Bar */}
+      <div className="shrink-0 flex items-center justify-between flex-wrap gap-4 bg-white rounded-[28px] px-6 py-4 shadow-[0_8px_28px_rgba(20,25,45,0.04)]">
         <div>
-          <h3 className="text-xl font-black font-display text-slate-900 tracking-tight">
+          <h3 className="text-[18px] font-semibold text-[#1a1f36] tracking-[-0.01em]">
             Waiter Calls
           </h3>
+          <p className="text-xs text-[#8c93a4] font-medium mt-0.5">
+            Click any active table call to mark it attended
+          </p>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60 shadow-2xs">
+        <div className="flex items-center gap-1.5 bg-[#f7f8fa] p-1.5 rounded-full">
           {(['All', 'Pending', 'Attended'] as const).map((tab) => {
             const isSelected = filterTab === tab;
-            const count = tab === 'Pending' ? pendingCount : tab === 'Attended' ? attendedCount : tables.length;
+            const count =
+              tab === 'Pending' ? pendingCount : tab === 'Attended' ? attendedCount : tables.length;
             return (
               <button
                 key={tab}
                 onClick={() => setFilterTab(tab)}
-                className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-4 py-1.5 rounded-full text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-[#e57e7c] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#313b68] text-white font-semibold shadow-2xs'
+                    : 'text-[#6e768a] hover:text-[#1a1f36] font-medium'
                 }`}
               >
                 <span>{tab}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isSelected ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold tabular-nums ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-[#e8ecf7] text-[#313b68]'
+                  }`}
+                >
                   {count}
                 </span>
               </button>
@@ -174,45 +182,41 @@ export const WaiterCallsSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Scrollable Main Content Area */}
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-4">
       {filterTab === 'Attended' ? (
-        <div className="bg-white rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-md shadow-slate-200/50 space-y-6">
+        <div className="bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_8px_28px_rgba(20,25,45,0.04)] space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <h4 className="font-black text-slate-900 text-lg tracking-tight font-display flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              <h4 className="font-semibold text-[#1a1f36] text-[17px] tracking-[-0.01em] flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#229a54]" />
                 <span>Attended Requests Audit Log</span>
               </h4>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Proof of fulfillment for customer requests and service history.
+              <p className="text-xs text-[#8c93a4] font-medium mt-0.5">
+                Fulfillment history for customer table requests
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              {/* Highlighted count of waiter calls attended/completed today */}
-              <div className="flex items-center gap-2.5 bg-emerald-50 text-emerald-900 border border-emerald-200/90 px-3.5 py-1.5 rounded-2xl shadow-2xs shrink-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-700 tracking-tight">Total Calls :</span>
-                <span className="text-sm font-black font-mono text-emerald-700 bg-white px-2.5 py-0.5 rounded-xl border border-emerald-300/80 shadow-2xs">
-                  {attendedCount}
-                </span>
+              <div className="flex items-center gap-2 bg-[#e6f6ec] text-[#229a54] px-3.5 py-1.5 rounded-full shrink-0 text-xs font-semibold">
+                <span>Fulfilled today:</span>
+                <span className="tabular-nums font-bold">{attendedCount}</span>
               </div>
 
-              {/* Search Bar beside count badge */}
-              <div className="relative w-full sm:w-72">
-                <div className="relative flex items-center bg-white border border-slate-200/90 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 rounded-2xl px-3.5 py-2 transition-all shadow-2xs">
-                  <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2.5" />
+              <div className="relative w-full sm:w-64">
+                <div className="flex items-center bg-[#f7f8fa] rounded-full px-3.5 py-2">
+                  <Search className="w-4 h-4 text-[#8c93a4] shrink-0 mr-2" />
                   <input
                     type="text"
                     placeholder="Search table or request..."
                     value={auditSearchQuery}
                     onChange={(e) => setAuditSearchQuery(e.target.value)}
-                    className="w-full bg-transparent text-xs font-bold text-slate-800 placeholder-slate-400 outline-none"
+                    className="w-full bg-transparent text-xs font-medium text-[#1a1f36] placeholder-[#8c93a4] outline-none"
                   />
                   {auditSearchQuery && (
                     <button
                       onClick={() => setAuditSearchQuery('')}
-                      className="p-0.5 hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-600 transition-colors ml-1"
+                      className="p-0.5 text-[#8c93a4] hover:text-[#1a1f36]"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -223,15 +227,17 @@ export const WaiterCallsSection: React.FC = () => {
           </div>
 
           {filteredLogs.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
-              <p className="font-extrabold text-sm text-slate-700">No attended request logs found</p>
-              <p className="text-xs text-slate-400 mt-0.5">Requests marked as attended will appear here as permanent proof.</p>
+            <div className="py-12 text-center text-[#8c93a4] bg-[#f7f8fa] rounded-[22px]">
+              <p className="font-semibold text-sm text-[#1a1f36]">No attended request logs found</p>
+              <p className="text-xs text-[#8c93a4] mt-0.5">
+                Requests marked as attended will appear here.
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                  <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase text-[#8c93a4] tracking-wider">
                     <th className="py-3 px-4">Table</th>
                     <th className="py-3 px-4">Service Request</th>
                     <th className="py-3 px-4">Requested At</th>
@@ -239,23 +245,23 @@ export const WaiterCallsSection: React.FC = () => {
                     <th className="py-3 px-4">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                <tbody className="divide-y divide-slate-100 text-xs font-medium text-[#1a1f36]">
                   {filteredLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-black text-slate-900 font-display">
+                    <tr key={log.id} className="hover:bg-[#f7f8fa] transition-colors">
+                      <td className="py-3.5 px-4 font-semibold text-[#1a1f36]">
                         Table {log.tableNumber}
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-slate-800">
+                      <td className="py-3.5 px-4 font-semibold text-[#1a1f36]">
                         {log.requestType}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-slate-500">
+                      <td className="py-3.5 px-4 tabular-nums text-[#8c93a4]">
                         {log.requestedTime}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-emerald-600 font-bold">
+                      <td className="py-3.5 px-4 tabular-nums text-[#229a54] font-semibold">
                         {log.attendedTime}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase">
+                        <span className="inline-flex items-center gap-1 bg-[#e6f6ec] text-[#229a54] px-2.5 py-0.5 rounded-full text-[11px] font-semibold">
                           ✓ Fulfilled
                         </span>
                       </td>
@@ -267,18 +273,18 @@ export const WaiterCallsSection: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="bg-slate-50/70 border border-slate-200/80 rounded-[32px] p-6 sm:p-10 shadow-inner relative min-h-[480px] flex flex-col justify-center">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 sm:gap-12 items-center justify-items-center py-6">
+        <div className="bg-white rounded-[28px] p-6 sm:p-10 shadow-[0_8px_28px_rgba(20,25,45,0.04)] min-h-[480px] flex flex-col justify-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 sm:gap-10 items-center justify-items-center py-4">
             {filteredTables.map((table) => {
               const isCalling = table.status === 'calling';
 
               const tableBgClass = isCalling
-                ? 'bg-[#e57e7c] border-[#d9706e] text-white shadow-xl shadow-rose-500/25'
-                : 'bg-white border-slate-200 text-slate-800 shadow-md';
+                ? 'bg-[#313b68] border-[#313b68] text-white shadow-[0_12px_28px_rgba(49,59,104,0.28)]'
+                : 'bg-[#f7f8fa] border-slate-200/80 text-[#1a1f36]';
 
               const chairBgClass = isCalling
-                ? 'bg-[#e57e7c] border-[#d9706e]'
-                : 'bg-slate-200 border-slate-300';
+                ? 'bg-[#313b68] border-[#252e54]'
+                : 'bg-[#e4e7f0] border-[#d5dae5]';
 
               return (
                 <div key={table.id} className="relative p-2 flex items-center justify-center">
@@ -293,31 +299,28 @@ export const WaiterCallsSection: React.FC = () => {
                     onClick={(e) => {
                       if (isCalling) handleMarkAttended(table, e);
                     }}
-                    className={`relative flex flex-col items-center justify-center p-2.5 rounded-[22px] w-30 h-30 sm:w-34 sm:h-34 border-2 shadow-md cursor-pointer transition-transform active:scale-95 ${tableBgClass}`}
-                    title={isCalling ? "Click anywhere on card to mark as attended" : ""}
+                    className={`relative flex flex-col items-center justify-center p-3 rounded-[24px] w-30 h-30 sm:w-34 sm:h-34 border cursor-pointer transition-transform active:scale-95 ${tableBgClass}`}
+                    title={isCalling ? 'Click to mark as attended' : ''}
                   >
-                    {/* Timestamp placed in top-right side corner */}
                     {isCalling && (
-                      <span className="absolute top-2 right-2 text-[10px] font-extrabold text-white/90 font-mono">
+                      <span className="absolute top-2.5 right-3 text-[10px] font-medium text-white/80 tabular-nums">
                         {table.timeAgo}
                       </span>
                     )}
 
-                    {/* Table Number */}
-                    <span className={`font-black font-display text-sm ${isCalling ? 'text-white' : 'text-slate-900'}`}>
+                    <span className={`font-semibold text-sm ${isCalling ? 'text-white' : 'text-[#1a1f36]'}`}>
                       Table {table.tableNumber}
                     </span>
 
-                    {/* Request Type: Shortened & Larger/Bolder font for easy readability */}
                     {isCalling ? (
-                      <div className="mt-1 text-center w-full px-1">
-                        <span className="text-white font-black text-xs tracking-tight truncate max-w-full block leading-snug drop-shadow-xs">
+                      <div className="mt-1.5 text-center w-full px-1">
+                        <span className="inline-block bg-white/15 text-white font-semibold text-[11px] px-2.5 py-0.5 rounded-full truncate max-w-full">
                           {table.callRequestType}
                         </span>
                       </div>
                     ) : (
-                      <div className="mt-1 text-center text-[11px] font-bold text-slate-400">
-                        Normal
+                      <div className="mt-1 text-center text-[11px] font-medium text-[#8c93a4]">
+                        Available
                       </div>
                     )}
                   </div>
@@ -327,6 +330,7 @@ export const WaiterCallsSection: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

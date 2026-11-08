@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { Plus, Minus, Search, Check, Filter, ChevronDown, X } from 'lucide-react';
+import {
+  Plus,
+  Minus,
+  Search,
+  Check,
+  Filter,
+  ChevronDown,
+  X,
+  LayoutGrid,
+  Soup,
+  Coffee,
+  Leaf,
+  CupSoda,
+  Croissant,
+} from 'lucide-react';
 import { OrderItem } from './GenerateBillCard';
 
 export interface DishItem {
@@ -113,6 +127,7 @@ export const DISHES_DATA: DishItem[] = [
 interface MenuDishCardsSectionProps {
   orderItems?: OrderItem[];
   onUpdateDishQuantity?: (dish: DishItem, delta: number) => void;
+  onNavigate?: (nav: string) => void;
 }
 
 export const MenuDishCardsSection: React.FC<MenuDishCardsSectionProps> = ({
@@ -124,7 +139,6 @@ export const MenuDishCardsSection: React.FC<MenuDishCardsSectionProps> = ({
   const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
   const [catSearchQuery, setCatSearchQuery] = useState('');
 
-  // Internal quantity state fallback if not managed externally
   const [internalQuantities, setInternalQuantities] = useState<Record<string, number>>({});
 
   const categories = ['All', 'Bowls', 'Breakfast', 'Healthy', 'Beverages', 'Bakery'];
@@ -164,67 +178,64 @@ export const MenuDishCardsSection: React.FC<MenuDishCardsSectionProps> = ({
   });
 
   return (
-    <div className="bg-white p-5 sm:p-6 rounded-[28px] border border-slate-100/90 shadow-lg shadow-slate-200/50">
-      <div>
-        {/* Header: Title, Category Dropdown (with search) & Main Search Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-100">
+    <div className="bg-white p-5 sm:p-6 rounded-[28px] shadow-[0_8px_28px_rgba(20,25,45,0.04)] h-full min-h-0 flex flex-col overflow-hidden">
+      {/* Fixed Top Controls inside Popular Dishes Card */}
+      <div className="shrink-0">
+        {/* Header: Title, Category Dropdown & Search Input */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 pb-3 border-b border-slate-100">
           <div>
-            <h3 className="font-extrabold text-slate-900 text-lg sm:text-xl tracking-tight font-display">
+            <h3 className="font-semibold text-[#1a1f36] text-lg sm:text-[19px] tracking-[-0.015em]">
               Popular Dishes
             </h3>
           </div>
 
-          {/* Controls: Category Dropdown & Improved Search Input */}
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            {/* Custom Category Dropdown with Internal Search */}
+            {/* Category Filter Dropdown */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
-                className="relative flex items-center bg-slate-50 hover:bg-slate-100/90 border border-slate-200/90 rounded-xl px-3 py-1.5 transition-all shadow-2xs text-xs font-bold text-slate-700 cursor-pointer"
+                className="flex items-center bg-[#f7f8fa] hover:bg-[#eef0f6] rounded-full px-3.5 py-2 transition-colors text-xs font-semibold text-[#1a1f36] cursor-pointer"
               >
-                <Filter className="w-3.5 h-3.5 text-[#52b788] mr-1.5 shrink-0" />
+                <Filter className="w-3.5 h-3.5 text-[#313b68] mr-1.5 shrink-0" />
                 <span>{activeCategory === 'All' ? 'All Categories' : activeCategory}</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-slate-400 ml-2 transition-transform duration-200 ${
+                  className={`w-3.5 h-3.5 text-[#8c93a4] ml-1.5 transition-transform duration-200 ${
                     isCatDropdownOpen ? 'rotate-180' : ''
                   }`}
                 />
               </button>
 
-              {/* Dropdown Popover */}
               {isCatDropdownOpen && (
                 <>
                   <div
                     className="fixed inset-0 z-20"
                     onClick={() => setIsCatDropdownOpen(false)}
                   />
-                  <div className="absolute top-full left-0 mt-1.5 w-52 bg-white rounded-2xl border border-slate-200 shadow-xl p-2 z-30 animate-in fade-in zoom-in-95 duration-150">
-                    {/* Small Search Bar inside Category Dropdown */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200/80 rounded-xl mb-2 focus-within:ring-2 focus-within:ring-emerald-400/30 focus-within:bg-white transition-all">
-                      <Search className="w-3 h-3 text-slate-400 shrink-0" />
+                  <div className="absolute top-full left-0 mt-2 w-52 bg-white rounded-[22px] shadow-[0_16px_40px_rgba(20,25,45,0.12)] p-2.5 z-30 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f7f8fa] rounded-full mb-2">
+                      <Search className="w-3 h-3 text-[#8c93a4] shrink-0" />
                       <input
                         type="text"
                         placeholder="Search category..."
                         value={catSearchQuery}
                         onChange={(e) => setCatSearchQuery(e.target.value)}
-                        className="w-full text-xs font-bold text-slate-800 bg-transparent placeholder-slate-400 outline-none"
+                        className="w-full text-xs font-medium text-[#1a1f36] bg-transparent placeholder-[#8c93a4] outline-none"
                         autoFocus
                       />
                       {catSearchQuery && (
                         <button
                           onClick={() => setCatSearchQuery('')}
-                          className="text-slate-400 hover:text-slate-600 p-0.5"
+                          className="text-[#8c93a4] hover:text-[#1a1f36] p-0.5"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       )}
                     </div>
 
-                    {/* Filtered Category Options */}
-                    <div className="max-h-40 overflow-y-auto space-y-0.5 pr-0.5">
+                    <div className="max-h-44 overflow-y-auto space-y-0.5">
                       {filteredCategories.length === 0 ? (
-                        <p className="text-[11px] text-slate-400 p-2 text-center font-medium">
+                        <p className="text-[11px] text-[#8c93a4] p-2 text-center font-medium">
                           No category found
                         </p>
                       ) : (
@@ -238,14 +249,14 @@ export const MenuDishCardsSection: React.FC<MenuDishCardsSectionProps> = ({
                                 setIsCatDropdownOpen(false);
                                 setCatSearchQuery('');
                               }}
-                              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-between ${
+                              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
                                 isSelected
-                                  ? 'bg-emerald-50 text-[#c4891e] border border-emerald-200/60'
-                                  : 'text-slate-700 hover:bg-slate-100/80'
+                                  ? 'bg-[#e8ecf7] text-[#313b68] font-semibold'
+                                  : 'text-[#1a1f36] hover:bg-[#f7f8fa]'
                               }`}
                             >
                               <span>{cat === 'All' ? 'All Categories' : cat}</span>
-                              {isSelected && <Check className="w-3.5 h-3.5 text-[#52b788]" />}
+                              {isSelected && <Check className="w-3.5 h-3.5 text-[#313b68]" />}
                             </button>
                           );
                         })
@@ -256,21 +267,21 @@ export const MenuDishCardsSection: React.FC<MenuDishCardsSectionProps> = ({
               )}
             </div>
 
-            {/* Improved Search Bar */}
-            <div className="relative flex-1 sm:w-52">
-              <div className="relative flex items-center bg-slate-50 focus-within:bg-white border border-slate-200/90 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 rounded-xl px-3 py-1.5 transition-all shadow-2xs">
-                <Search className="w-3.5 h-3.5 text-slate-400 shrink-0 mr-2" />
+            {/* Search Input */}
+            <div className="relative flex-1 sm:w-60">
+              <div className="flex items-center bg-[#f7f8fa] focus-within:bg-[#eef0f6] rounded-full px-3.5 py-2 transition-colors">
+                <Search className="w-3.5 h-3.5 text-[#8c93a4] shrink-0 mr-2" />
                 <input
                   type="text"
                   placeholder="Search dishes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent text-xs font-bold text-slate-800 placeholder-slate-400 outline-none"
+                  className="w-full bg-transparent text-xs font-medium text-[#1a1f36] placeholder-[#8c93a4] outline-none"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="p-0.5 hover:bg-slate-200/60 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                    className="p-0.5 text-[#8c93a4] hover:text-[#1a1f36] transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -280,113 +291,119 @@ export const MenuDishCardsSection: React.FC<MenuDishCardsSectionProps> = ({
           </div>
         </div>
 
-        {/* Horizontal Category Filter Pills Bar for Easy Picking */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3.5 mb-1 pt-0.5">
+        {/* Horizontal Category Filter Pills Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3.5">
           {[
-            { id: 'All', label: 'All Categories' },
-            { id: 'Bowls', label: 'Bowls' },
-            { id: 'Breakfast', label: 'Breakfast' },
-            { id: 'Healthy', label: 'Healthy' },
-            { id: 'Beverages', label: 'Beverages' },
-            { id: 'Bakery', label: 'Bakery & Pastry' },
+            { id: 'All', label: 'All Categories', icon: LayoutGrid },
+            { id: 'Bowls', label: 'Bowls', icon: Soup },
+            { id: 'Breakfast', label: 'Breakfast', icon: Coffee },
+            { id: 'Healthy', label: 'Healthy', icon: Leaf },
+            { id: 'Beverages', label: 'Beverages', icon: CupSoda },
+            { id: 'Bakery', label: 'Bakery & Pastry', icon: Croissant },
           ].map((cat) => {
             const isSelected = activeCategory === cat.id;
+            const IconComponent = cat.icon;
             return (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                className={`px-4 py-1.5 rounded-full text-xs transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-[#52b788] text-white font-black shadow-2xs'
-                    : 'bg-slate-100/90 hover:bg-slate-200 text-slate-700 hover:text-slate-900'
+                    ? 'bg-[#313b68] text-white font-semibold shadow-2xs'
+                    : 'bg-[#f7f8fa] hover:bg-[#eceff5] text-[#6e768a] hover:text-[#1a1f36] font-medium'
                 }`}
               >
-                {cat.label}
+                <IconComponent className="w-3.5 h-3.5 shrink-0" />
+                <span>{cat.label}</span>
               </button>
             );
           })}
         </div>
+      </div>
 
-        {/* Dish Cards Container with internal vertical scrollbar so popular dishes section scrolls internally */}
-        <div className="bg-slate-50/70 border border-slate-200/80 rounded-[26px] p-3.5 sm:p-4 shadow-inner mt-1 max-h-[580px] overflow-y-auto pr-1.5">
-          {filteredDishes.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 font-bold text-sm">
-              No dishes found matching your search.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-              {filteredDishes.map((dish) => {
-                const qty = getDishQuantity(dish);
+      {/* Scrollable Dishes Container (ONLY this inner area scrolls when scrolling dishes) */}
+      <div className="flex-1 min-h-0 bg-[#f7f8fa] rounded-[24px] p-3.5 sm:p-4 overflow-y-auto">
+        {filteredDishes.length === 0 ? (
+          <div className="py-12 text-center text-[#8c93a4] font-medium text-sm">
+            No dishes found matching your search.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5">
+            {filteredDishes.map((dish) => {
+              const qty = getDishQuantity(dish);
 
-                return (
-                  <div
-                    key={dish.id}
-                    className="bg-white rounded-[22px] p-3.5 sm:p-4 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between relative group border border-slate-200/70 shadow-lg shadow-slate-200/70 hover:shadow-xl"
-                  >
-                    {/* Center Hero Dish Picture */}
-                    <div className="my-1.5 py-1 flex items-center justify-center">
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-slate-50 shadow-inner group-hover:scale-105 transition-transform duration-300 relative border border-slate-100">
-                        <img
-                          src={dish.image}
-                          alt={dish.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
+              return (
+                <div
+                  key={dish.id}
+                  className={`bg-white rounded-[20px] p-3.5 transition-all duration-200 flex flex-col justify-between relative group border ${
+                    qty > 0
+                      ? 'border-[#313b68]/30 shadow-[0_6px_18px_rgba(49,59,104,0.08)]'
+                      : 'border-slate-100 shadow-[0_4px_14px_rgba(20,25,45,0.03)] hover:shadow-[0_8px_20px_rgba(20,25,45,0.06)]'
+                  }`}
+                >
+                  {/* Wide Dish Image Container (wider horizontal span, consistent height) */}
+                  <div className="w-full h-22 sm:h-24 rounded-2xl overflow-hidden bg-[#f7f8fa] relative border border-slate-100">
+                    <img
+                      src={dish.image}
+                      alt={dish.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
 
-                    {/* Centered Title */}
-                    <div className="text-center mb-2.5">
-                      <h4 className="font-black text-slate-900 text-base sm:text-lg tracking-tight font-display line-clamp-2">
-                        {dish.title}
-                      </h4>
-                    </div>
+                  {/* Centered Dish Title & Subtitle */}
+                  <div className="text-center my-2">
+                    <h4 className="font-semibold text-[#1a1f36] text-sm tracking-tight truncate">
+                      {dish.title}
+                    </h4>
+                    <p className="text-[11px] text-[#8c93a4] font-medium truncate mt-0.5">
+                      {dish.subtitle}
+                    </p>
+                  </div>
 
-                    {/* Bottom Row with Price & Curved Square Controls */}
-                    <div className="flex items-center justify-between min-h-[38px] pt-1 px-1">
-                      <span className="font-extrabold font-mono text-sm sm:text-base text-slate-900">
-                        ₹{dish.price.toFixed(1)}
-                      </span>
+                  {/* Bottom Row with Price & Compact Stepper Controls */}
+                  <div className="flex items-center justify-between min-h-[32px] pt-1.5 border-t border-slate-100">
+                    <span className="font-display font-semibold tabular-nums text-sm text-[#1a1f36]">
+                      ₹{dish.price.toFixed(1)}
+                    </span>
 
-                      {qty === 0 ? (
-                        /* Initial Single Plus Button */
+                    {qty === 0 ? (
+                      <button
+                        onClick={() => handleDelta(dish, 1)}
+                        className="w-7 h-7 rounded-lg bg-[#313b68] hover:bg-[#252e54] text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+                        title="Add to Bill"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleDelta(dish, -1)}
+                          className="w-6 h-6 rounded-lg bg-[#f7f8fa] hover:bg-[#e8ecf7] text-[#1a1f36] flex items-center justify-center transition-all cursor-pointer active:scale-95"
+                          title="Deduct"
+                        >
+                          <Minus className="w-3 h-3 stroke-[2.5]" />
+                        </button>
+
+                        <span className="font-semibold tabular-nums text-xs text-[#1a1f36] min-w-[14px] text-center">
+                          {qty}
+                        </span>
+
                         <button
                           onClick={() => handleDelta(dish, 1)}
-                          className="w-7 h-7 rounded-lg bg-[#52b788] hover:bg-[#409a71] text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95 hover:scale-105"
-                          title="Add to Bill"
+                          className="w-6 h-6 rounded-lg bg-[#313b68] hover:bg-[#252e54] text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-2xs"
+                          title="Add More"
                         >
-                          <Plus className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                          <Plus className="w-3 h-3 text-white stroke-[2.5]" />
                         </button>
-                      ) : (
-                        /* Expanded Controls */
-                        <div className="flex items-center gap-1.5 animate-in fade-in zoom-in-90 duration-150">
-                          <button
-                            onClick={() => handleDelta(dish, -1)}
-                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200/90 text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95 border border-slate-200/60"
-                            title="Deduct"
-                          >
-                            <Minus className="w-3 h-3 text-slate-700 stroke-[2.5]" />
-                          </button>
-
-                          <span className="font-extrabold font-mono text-xs sm:text-sm text-slate-900 px-1 min-w-[16px] text-center">
-                            {qty}
-                          </span>
-
-                          <button
-                            onClick={() => handleDelta(dish, 1)}
-                            className="w-7 h-7 rounded-lg bg-[#52b788] hover:bg-[#409a71] text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-2xs"
-                            title="Add More"
-                          >
-                            <Plus className="w-3 h-3 text-white stroke-[2.5]" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

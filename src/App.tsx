@@ -5,13 +5,8 @@
 
 import React, { useState } from 'react';
 import { HeaderBar } from './components/HeaderBar';
-import { CreditCardWidget } from './components/CreditCardWidget';
-import { FundPromotionalCard } from './components/FundPromotionalCard';
-import { AssetCategories } from './components/AssetCategories';
 import { MenuDishCardsSection, DishItem } from './components/MenuDishCardsSection';
-import { InvestedValueChart } from './components/InvestedValueChart';
 import { TransactionsList, Transaction } from './components/TransactionsList';
-import { AssetsAndStocksRow } from './components/AssetsAndStocksRow';
 import { GenerateBillCard, OrderItem } from './components/GenerateBillCard';
 import { AddFundsModal } from './components/AddFundsModal';
 import { QuickInvestModal } from './components/QuickInvestModal';
@@ -21,15 +16,13 @@ import { WaiterCallsSection } from './components/WaiterCallsSection';
 import { OnlineOrdersSection, OrderCard } from './components/OnlineOrdersSection';
 import { SettingsView } from './components/SettingsView';
 import { RestaurantSettingsProvider } from './context/RestaurantSettingsContext';
-import { ArrowLeft, TrendingUp, DollarSign, PieChart, Shield, Sliders, FileText, Receipt, Printer, Search, CheckCircle2, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
   const [activeNav, setActiveNav] = useState('Billing');
   const [walletBalance, setWalletBalance] = useState(205500);
-  const [strategy, setStrategy] = useState<'Conservative' | 'Moderate' | 'Billing'>('Billing');
   const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [pastBillsSearch, setPastBillsSearch] = useState('');
   const [selectedReceiptBill, setSelectedReceiptBill] = useState<PastBill | null>(null);
 
   // Live completed QR orders that flow into the Sales Report
@@ -73,59 +66,6 @@ export default function App() {
     };
     setCompletedQrBills((prev) => [newBill, ...prev]);
   };
-
-  const [pastBills] = useState<PastBill[]>([
-    {
-      id: 'pb-1',
-      billNo: '#INV-70984',
-      tableNo: 'Table T-4',
-      dateTime: '01 Nov 2026, 02:45 PM',
-      itemsSummary: '2x Yogurt Bowl, 1x Fruit Bowl',
-      amount: 45.0,
-      paymentMethod: 'Credit Card',
-      status: 'Paid',
-    },
-    {
-      id: 'pb-2',
-      billNo: '#INV-70983',
-      tableNo: 'Table T-2',
-      dateTime: '01 Nov 2026, 01:20 PM',
-      itemsSummary: '1x Quinoa Bowl, 2x French Crepes',
-      amount: 68.5,
-      paymentMethod: 'Cash',
-      status: 'Paid',
-    },
-    {
-      id: 'pb-3',
-      billNo: '#INV-70982',
-      tableNo: 'Table T-9',
-      dateTime: '01 Nov 2026, 12:05 PM',
-      itemsSummary: '3x Pancakes, 2x Chia Seed Pudding',
-      amount: 82.0,
-      paymentMethod: 'UPI / QR',
-      status: 'Paid',
-    },
-    {
-      id: 'pb-4',
-      billNo: '#INV-70981',
-      tableNo: 'Table T-1',
-      dateTime: '31 Oct 2026, 08:30 PM',
-      itemsSummary: '1x Fruit Bowl, 1x Yogurt Bowl',
-      amount: 34.0,
-      paymentMethod: 'Cash',
-      status: 'Paid',
-    },
-    {
-      id: 'pb-5',
-      billNo: '#INV-70980',
-      tableNo: 'Table T-6',
-      dateTime: '31 Oct 2026, 07:15 PM',
-      itemsSummary: '2x Waffles, 2x Healthy Bowls',
-      amount: 56.0,
-      paymentMethod: 'Credit Card',
-      status: 'Paid',
-    },
-  ]);
 
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
     {
@@ -193,7 +133,7 @@ export default function App() {
     );
   };
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
+  const [, setTransactions] = useState<Transaction[]>([
     {
       id: 'tx-1',
       date: '12 May 2023',
@@ -241,95 +181,86 @@ export default function App() {
         type: 'withdrawal',
       };
       setTransactions((prev) => [newTx, ...prev]);
-    } else {
-      alert('Insufficient wallet balance to complete investment.');
     }
   };
 
   return (
     <RestaurantSettingsProvider>
-      <div className="min-h-screen w-full bg-[#edf5f1] font-sans flex justify-center">
-        {/* Full-Screen Dashboard Container */}
-        <div className="w-full max-w-[1536px] bg-[#edf5f1] min-h-screen flex flex-col">
-        {/* Top Header Section */}
-        <HeaderBar
-          activeNav={activeNav}
-          setActiveNav={setActiveNav}
-          onlineOrdersCount={6}
-          waiterCallsCount={4}
+      {/* Fixed 100vh App Shell: Header stays locked at top, only internal content scrolls */}
+      <div className="h-screen w-full overflow-hidden bg-[#eff1f6] text-[#1a1f36] font-sans flex justify-center">
+        <div className="w-full max-w-[1600px] bg-[#eff1f6] h-screen overflow-hidden flex flex-col">
+          {/* Fixed Top Header Section */}
+          <HeaderBar
+            activeNav={activeNav}
+            setActiveNav={setActiveNav}
+            onlineOrdersCount={6}
+            waiterCallsCount={4}
+          />
+
+          {/* Full-Width Workspace Content (Sidebar removed, Popular Dishes extended to left edge) */}
+          <main className="flex-1 min-h-0 px-4 sm:px-6 lg:px-8 pb-5 pt-1 overflow-hidden">
+            {activeNav === 'Billing' ? (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 h-full min-h-0 items-start">
+                {/* Left Main Section: Popular Dishes (Fixed Card Header, Internal Scrolling Grid) */}
+                <div className="lg:col-span-8 h-full min-h-0 flex flex-col">
+                  <MenuDishCardsSection
+                    orderItems={orderItems}
+                    onUpdateDishQuantity={handleUpdateDishQuantity}
+                    onNavigate={setActiveNav}
+                  />
+                </div>
+
+                {/* Right Section: Generate Bill (Fixed Position, Compact Height) */}
+                <div className="lg:col-span-4 max-h-full overflow-y-auto no-scrollbar">
+                  <GenerateBillCard
+                    orderItems={orderItems}
+                    onUpdateQuantity={handleUpdateOrderItemQuantity}
+                  />
+                </div>
+              </div>
+            ) : activeNav === 'QR Orders' || activeNav === 'Online Orders' ? (
+              <OnlineOrdersSection onCompleteOrder={handleCompleteQrOrder} />
+            ) : activeNav === 'Waiter Calls' ? (
+              <WaiterCallsSection />
+            ) : activeNav === 'Sales Report' || activeNav === 'Past Bills' ? (
+              <SalesReportView
+                customBills={completedQrBills}
+                onNewSaleClick={() => setActiveNav('Billing')}
+              />
+            ) : activeNav === 'Settings' ? (
+              <SettingsView />
+            ) : (
+              <div className="py-8 px-4 text-center space-y-6">
+                <button
+                  onClick={() => setActiveNav('Billing')}
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-[#6e768a] hover:text-[#313b68] transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back to Billing</span>
+                </button>
+              </div>
+            )}
+          </main>
+        </div>
+
+        {/* Modals */}
+        <AddFundsModal
+          isOpen={isAddFundsOpen}
+          onClose={() => setIsAddFundsOpen(false)}
+          onAdd={handleAddFunds}
         />
 
-        {/* Lower Main Content Section */}
-        <div className="px-3 sm:px-5 lg:px-6 pb-10 pt-2 bg-transparent flex-1">
+        <QuickInvestModal
+          category={selectedCategory}
+          onClose={() => setSelectedCategory(null)}
+          onConfirmInvest={handleConfirmInvest}
+        />
 
-
-          {activeNav === 'Billing' ? (
-            /* Billing Mode: Dish Cards + POS Generate Bill */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-              {/* Left Main Section (Menu Dish Cards) */}
-              <div className="lg:col-span-7">
-                <MenuDishCardsSection
-                  orderItems={orderItems}
-                  onUpdateDishQuantity={handleUpdateDishQuantity}
-                />
-              </div>
-
-              {/* Right Section (Generate Bill Section) */}
-              <div className="lg:col-span-5 lg:sticky lg:top-4">
-                <GenerateBillCard
-                  orderItems={orderItems}
-                  onUpdateQuantity={handleUpdateOrderItemQuantity}
-                />
-              </div>
-            </div>
-          ) : activeNav === 'QR Orders' || activeNav === 'Online Orders' ? (
-            /* QR Orders Mode: Customer table QR orders UI */
-            <OnlineOrdersSection onCompleteOrder={handleCompleteQrOrder} />
-          ) : activeNav === 'Waiter Calls' ? (
-            /* Waiter Calls Mode: Clean Grid with Search Bar and Call Cards */
-            <WaiterCallsSection />
-          ) : activeNav === 'Sales Report' || activeNav === 'Past Bills' ? (
-            /* Unified Sales Report & Past Bills Page matching user reference UI */
-            <SalesReportView 
-              customBills={completedQrBills}
-              onNewSaleClick={() => setActiveNav('Billing')} 
-            />
-          ) : activeNav === 'Settings' ? (
-            /* Settings Mode: 4-Step Form for Store, Account, Tax & Receipt */
-            <SettingsView />
-          ) : (
-            /* Sub-views for other navigation tabs */
-            <div className="py-8 px-4 text-center space-y-6">
-              <button
-                onClick={() => setActiveNav('Billing')}
-                className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#52b788] transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to Billing</span>
-              </button>
-            </div>
-          )}
-        </div>
+        <ReceiptModal
+          bill={selectedReceiptBill}
+          onClose={() => setSelectedReceiptBill(null)}
+        />
       </div>
-
-      {/* Modals */}
-      <AddFundsModal
-        isOpen={isAddFundsOpen}
-        onClose={() => setIsAddFundsOpen(false)}
-        onAdd={handleAddFunds}
-      />
-
-      <QuickInvestModal
-        category={selectedCategory}
-        onClose={() => setSelectedCategory(null)}
-        onConfirmInvest={handleConfirmInvest}
-      />
-
-      <ReceiptModal
-        bill={selectedReceiptBill}
-        onClose={() => setSelectedReceiptBill(null)}
-      />
-    </div>
     </RestaurantSettingsProvider>
   );
 }
